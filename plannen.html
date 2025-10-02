@@ -202,7 +202,7 @@
         ExtraStatisch: Array.from(rij.querySelectorAll(".veld-statisch-extra")).map(i => i.value).filter(v => v)
       };
 
-      db.collection("opdrachten").add(opdracht)
+      db.collection("Overzicht Opdrachten").add(opdracht)
         .then(() => {
           alert("✅ Opdracht opgeslagen in Firebase!");
         })
