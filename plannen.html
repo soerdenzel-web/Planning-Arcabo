@@ -109,7 +109,6 @@
   </style>
 </head>
 <body>
-
   <div class="terug-container">
     <button onclick="window.location.href='index.html'">← Terug naar Home</button>
     <button onclick="window.location.href='overzicht.html'">← Ga naar planning overzicht</button>
@@ -150,12 +149,13 @@
 
   <script>
     const firebaseConfig = {
-      apiKey: "JOUW_API_KEY",
-      authDomain: "JOUW_PROJECT.firebaseapp.com",
-      projectId: "JOUW_PROJECT_ID",
-      storageBucket: "JOUW_PROJECT.appspot.com",
-      messagingSenderId: "JOUW_SENDER_ID",
-      appId: "JOUW_APP_ID"
+      apiKey: "AIzaSyA9EB-Wznd-R5xg4S3XD7DbPebzDVN9itQ",
+      authDomain: "planning-arcabo.firebaseapp.com",
+      projectId: "planning-arcabo",
+      storageBucket: "planning-arcabo.appspot.com",
+      messagingSenderId: "736425908291",
+      appId: "1:736425908291:web:0fad073b98133e81f81cf6",
+      measurementId: "G-RF6GKZGBWL"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -163,8 +163,7 @@
 
     function toggleExtra(id) {
       const el = document.getElementById(id);
-      const huidige = window.getComputedStyle(el).display;
-      el.style.display = huidige === "none" ? "block" : "none";
+      el.style.display = el.style.display === "none" ? "block" : "none";
     }
 
     function voegExtraToe(knop, classNaam) {
@@ -271,11 +270,9 @@
       document.getElementById("planningTabel").appendChild(rij);
     }
 
-    // ✅ Voeg standaard één rij toe bij het laden
     document.addEventListener("DOMContentLoaded", () => {
       voegRijToe();
     });
   </script>
-
 </body>
 </html>
