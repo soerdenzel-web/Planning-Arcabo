@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Overzicht Planning</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .terug-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .terug-container button {
+      padding: 8px 14px;
+      background-color: #007BF2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .terug-container button:hover {
+      background-color: #005bb5;
+    }
+
+    .maand-blok {
+      margin-bottom: 40px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .maand-blok h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .opdracht-tegel {
+      background-color: #f1f1f1;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .opdracht-tegel strong {
+      color: #222;
+    }
+
+    .opdracht-tegel ul {
+      margin: 6px 0 12px 0;
+      padding-left: 20px;
+    }
+
+    .verwijder-knop, .bewerk-knop {
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .verwijder-knop {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .verwijder-knop:hover {
+      background-color: #c82333;
+    }
+
+    .bewerk-knop {
+      background-color: #ffc107;
+      color: black;
+    }
+
+    .bewerk-knop:hover {
+      background-color: #e0a800;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="terug-container">
+    <button onclick="window.location.href='index.html'">← Terug naar Home</button>
+  </div>
+
+  <h1>Overzicht Planning</h1>
+
+  <div id="maandContainer"></div>
+
+  <script>
+    const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+    const maandContainer = document.getElementById("maandContainer");
+
+    const opdrachtenPerMaand = {};
+
+    opdrachten.forEach((opdracht, index) => {
+      const maandKey = opdracht.Startdatum?.slice(0, 7); // "YYYY-MM"
+      if (!maandKey) return;
+      if (!opdrachtenPerMaand[maandKey]) {
+        opdrachtenPerMaand[maandKey] = [];
+      }
+      opdrachtenPerMaand[maandKey].push({ ...opdracht, index });
+    });
+
+    for (const maand in opdrachtenPerMaand) {
+      const maandDiv = document.createElement("div");
+      maandDiv.className = "maand-blok";
+
+      const maandTitel = document.createElement("h2");
+      maandTitel.textContent = `Maand: ${maand}`;
+      maandDiv.appendChild(maandTitel);
+
+      const tegelContainer = document.createElement("div");
+
+      opdrachtenPerMaand[maand].forEach(opdracht => {
+        const tegel = document.createElement("div");
+        tegel.className = "opdracht-tegel";
+
+        const urenZagerij = parseFloat(opdracht.Zagerij) || 0;
+        const urenDynamisch = parseFloat(opdracht.Dynamisch) || 0;
+        const urenStatisch = parseFloat(opdracht.Statisch) || 0;
+        const totaalPerOpdracht = urenZagerij + urenDynamisch + urenStatisch;
+
+        tegel.innerHTML = `
+          <strong>Periode:</strong> ${opdracht.Startdatum} → ${opdracht.Einddatum}<br>
+          <strong>Code:</strong> ${opdracht.Code || "n.v.t."}<br>
+          <strong>Locatie:</strong> ${opdracht.Locatie || "n.v.t."}<br>
+          <strong>Model:</strong> ${opdracht.Model || "n.v.t."}<br>
+          <strong>Afmetingen:</strong> ${opdracht.Lengte || "?"} × ${opdracht.Breedte || "?"}<br>
+          <strong>Zagerij:</strong> ${urenZagerij} uur<br>
+          <strong>Dynamisch:</strong> ${urenDynamisch} uur<br>
+          <strong>Statisch:</strong> ${urenStatisch} uur<br>
+          <strong>Subtotaal:</strong> ${totaalPerOpdracht} uur<br>
+        `;
+
+        if (opdracht.ExtraZagerij && opdracht.ExtraZagerij.length > 0) {
+          tegel.innerHTML += `<strong>Extra Zagerij:</strong><ul>${opdracht.ExtraZagerij.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        if (opdracht.ExtraDynamisch && opdracht.ExtraDynamisch.length > 0) {
+          tegel.innerHTML += `<strong>Extra Dynamisch:</strong><ul>${opdracht.ExtraDynamisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        if (opdracht.ExtraStatisch && opdracht.ExtraStatisch.length > 0) {
+          tegel.innerHTML += `<strong>Extra Statisch:</strong><ul>${opdracht.ExtraStatisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        tegel.innerHTML += `
+          <button class="bewerk-knop" onclick="bewerkOpdracht(${opdracht.index})">✏️ Bewerken</button>
+          <button class="verwijder-knop" onclick="verwijderOpdracht(${opdracht.index})">🗑️ Verwijder</button>
+        `;
+
+        tegelContainer.appendChild(tegel);
+      });
+
+      maandDiv.appendChild(tegelContainer);
+      maandContainer.appendChild(maandDiv);
+    }
+
+    function verwijderOpdracht(index) {
+      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+      opdrachten.splice(index, 1);
+      localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+      location.reload();
+    }
+
+    function bewerkOpdracht(index) {
+      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+      const opdracht = opdrachten[index];
+
+      const nieuweWaarden = prompt("✏️ Pas de opdracht aan (JSON-formaat):", JSON.stringify(opdracht, null, 2));
+      if (!nieuweWaarden) return;
+
+      try {
+        const aangepasteOpdracht = JSON.parse(nieuweWaarden);
+        opdrachten[index] = aangepasteOpdracht;
+        localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+        alert("✅ Opdracht bijgewerkt!");
+        location.reload();
+      } catch (e) {
+        alert("❌ Ongeldige invoer. Zorg dat je geldige JSON gebruikt.");
+      }
+    }
+  </script>
+
+</body>
+</html>

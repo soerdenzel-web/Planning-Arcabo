@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Excel importeren</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="terug-container">
+    <button onclick="window.location.href='index.html'">← Terug naar Home</button>
+    <button onclick="window.location.href='plannen.html'">← Terug naar Plannen</button>
+  </div>
+
+  <h1>Excel importeren</h1>
+
+  <input type="file" id="excelInput" accept=".xlsx, .xls" />
+  <button onclick="verwerkEnGaVerder()">Importeer</button>
+
+  <script>
+    function verwerkEnGaVerder() {
+      const fileInput = document.getElementById("excelInput");
+      const file = fileInput.files[0];
+      if (!file) return alert("Selecteer een Excel-bestand.");
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+
+        const json = XLSX.utils.sheet_to_json(sheet, {
+          defval: "", // vul lege cellen met lege string
+          raw: true   // behoud originele waarden
+        });
+
+        const opdrachten = json.map(row => ({
+          Startdatum: row.Start || row.Begintijd || "",
+          Einddatum: row.End || row.Eindtijd || "",
+          Code: row.Code || "",
+          Locatie: row.Locatie || row.Klant || "",
+          Model: row.Model || "",
+          Lengte: row.Lengte || "",
+          Breedte: row.Breedte || "",
+          Hoogte: row.Hoogte || "",
+          Gewicht: row.Gewicht || "",
+          Zijkant: row.Zijkant || "",
+          Zagerij: row.Zagerij || row["Zijpartij"] || "",
+          Dynamisch: row.Dynamisch || "",
+          Statisch: row.Statisch || ""
+        }));
+
+        localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+        alert(`✅ ${opdrachten.length} regels geïmporteerd`);
+        window.location.href = "voorbeeld-export.html";
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+  </script>
+
+</body>
+</html>

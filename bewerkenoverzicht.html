@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Overzicht Planning</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .terug-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+    }
+
+    .terug-container button {
+      padding: 8px 14px;
+      background-color: #007BF2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .terug-container button:hover {
+      background-color: #005bb5;
+    }
+
+    .maand-blok {
+      margin-bottom: 40px;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .maand-blok h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .opdracht-tegel {
+      background-color: #f1f1f1;
+      padding: 15px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .opdracht-tegel label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .opdracht-tegel input {
+      width: calc(100% - 12px);
+      padding: 4px;
+      margin-top: 4px;
+    }
+
+    .opdracht-tegel ul {
+      margin: 6px 0 12px 0;
+      padding-left: 20px;
+    }
+
+    .verwijder-knop, .bewerk-knop {
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 6px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .verwijder-knop {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .verwijder-knop:hover {
+      background-color: #c82333;
+    }
+
+    .bewerk-knop {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .bewerk-knop:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="terug-container">
+    <button onclick="window.location.href='index.html'">← Terug naar Home</button>
+  </div>
+
+  <h1>Overzicht Planning</h1>
+
+  <div id="maandContainer"></div>
+
+  <script>
+    const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+    const maandContainer = document.getElementById("maandContainer");
+
+    const opdrachtenPerMaand = {};
+
+    opdrachten.forEach((opdracht, index) => {
+      const maandKey = opdracht.Startdatum?.slice(0, 7); // "YYYY-MM"
+      if (!maandKey) return;
+      if (!opdrachtenPerMaand[maandKey]) {
+        opdrachtenPerMaand[maandKey] = [];
+      }
+      opdrachtenPerMaand[maandKey].push({ ...opdracht, index });
+    });
+
+    for (const maand in opdrachtenPerMaand) {
+      const maandDiv = document.createElement("div");
+      maandDiv.className = "maand-blok";
+
+      const maandTitel = document.createElement("h2");
+      maandTitel.textContent = `Maand: ${maand}`;
+      maandDiv.appendChild(maandTitel);
+
+      const tegelContainer = document.createElement("div");
+
+      opdrachtenPerMaand[maand].forEach(opdracht => {
+        const tegel = document.createElement("div");
+        tegel.className = "opdracht-tegel";
+
+        tegel.innerHTML = `
+          <label><strong>Startdatum:</strong><input type="date" class="edit-start" value="${opdracht.Startdatum}"></label>
+          <label><strong>Einddatum:</strong><input type="date" class="edit-eind" value="${opdracht.Einddatum}"></label>
+          <label><strong>Code:</strong><input type="text" class="edit-code" value="${opdracht.Code || ""}"></label>
+          <label><strong>Locatie:</strong><input type="text" class="edit-locatie" value="${opdracht.Locatie || ""}"></label>
+          <label><strong>Model:</strong><input type="text" class="edit-model" value="${opdracht.Model || ""}"></label>
+          <label><strong>Lengte:</strong><input type="number" class="edit-lengte" value="${opdracht.Lengte || ""}"></label>
+          <label><strong>Breedte:</strong><input type="number" class="edit-breedte" value="${opdracht.Breedte || ""}"></label>
+          <label><strong>Zagerij:</strong><input type="number" class="edit-zagerij" value="${opdracht.Zagerij || 0}"></label>
+          <label><strong>Dynamisch:</strong><input type="number" class="edit-dynamisch" value="${opdracht.Dynamisch || 0}"></label>
+          <label><strong>Statisch:</strong><input type="number" class="edit-statisch" value="${opdracht.Statisch || 0}"></label>
+        `;
+
+        if (opdracht.ExtraZagerij?.length) {
+          tegel.innerHTML += `<strong>Extra Zagerij:</strong><ul>${opdracht.ExtraZagerij.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        if (opdracht.ExtraDynamisch?.length) {
+          tegel.innerHTML += `<strong>Extra Dynamisch:</strong><ul>${opdracht.ExtraDynamisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        if (opdracht.ExtraStatisch?.length) {
+          tegel.innerHTML += `<strong>Extra Statisch:</strong><ul>${opdracht.ExtraStatisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        const opslaanBtn = document.createElement("button");
+        opslaanBtn.textContent = "💾 Opslaan wijzigingen";
+        opslaanBtn.className = "bewerk-knop";
+        opslaanBtn.onclick = () => {
+          const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+
+          opdrachten[opdracht.index] = {
+            ...opdrachten[opdracht.index],
+            Startdatum: tegel.querySelector(".edit-start").value,
+            Einddatum: tegel.querySelector(".edit-eind").value,
+            Code: tegel.querySelector(".edit-code").value,
+            Locatie: tegel.querySelector(".edit-locatie").value,
+            Model: tegel.querySelector(".edit-model").value,
+            Lengte: tegel.querySelector(".edit-lengte").value,
+            Breedte: tegel.querySelector(".edit-breedte").value,
+            Zagerij: tegel.querySelector(".edit-zagerij").value,
+            Dynamisch: tegel.querySelector(".edit-dynamisch").value,
+            Statisch: tegel.querySelector(".edit-statisch").value
+          };
+
+          localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+          alert("✅ Opdracht bijgewerkt!");
+          location.reload();
+        };
+
+        const verwijderBtn = document.createElement("button");
+        verwijderBtn.textContent = "🗑️ Verwijder";
+        verwijderBtn.className = "verwijder-knop";
+        verwijderBtn.onclick = () => verwijderOpdracht(opdracht.index);
+
+        tegel.appendChild(opslaanBtn);
+        tegel.appendChild(verwijderBtn);
+        tegelContainer.appendChild(tegel);
+      });
+
+      maandDiv.appendChild(tegelContainer);
+      maandContainer.appendChild(maandDiv);
+    }
+
+    function verwijderOpdracht(index) {
+      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+      opdrachten.splice(index, 1);
+      localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+      location.reload();
+    }
+  </script>
+
+</body>
+</html>

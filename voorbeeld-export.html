@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Voorbeeld Excel Export</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f2f2f2;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .terug-container {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .terug-container button {
+      padding: 8px 14px;
+      background-color: #007BF2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .terug-container button:hover {
+      background-color: #005bb5;
+    }
+
+    .opdracht-header {
+      font-weight: bold;
+      background-color: #e9ecef;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: repeat(14, minmax(100px, 1fr));
+      gap: 8px;
+    }
+
+    .opdracht-rij {
+      display: grid;
+      grid-template-columns: repeat(14, minmax(100px, 1fr));
+      gap: 8px;
+      align-items: center;
+      background-color: #fff;
+      padding: 10px;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+      margin-bottom: 8px;
+    }
+
+    .veld {
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+
+    .verwijder-knop {
+      background-color: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .verwijder-knop:hover {
+      background-color: #c82333;
+    }
+
+    .actie-knoppen {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 40px;
+    }
+
+    .excel-knop {
+      padding: 10px 16px;
+      font-size: 14px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .excel-knop:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigatieknoppen -->
+  <div class="terug-container">
+    <button onclick="window.location.href='index.html'">← Terug naar Home</button>
+    <button onclick="window.location.href='plannen.html'">← Terug naar Plannen</button>
+    <button onclick="window.location.href='importeren.html'">← Terug naar Importeren</button>
+    <button class="excel-knop" onclick="opslaanEnVerversen()">📥 Opslaan in overzicht</button>
+  </div>
+
+  <h1>Voorbeeld van Excel Export</h1>
+
+  <!-- Voorbeeldregels -->
+  <div class="maand-blok">
+    <h2>Voorbeeldregels</h2>
+    <div class="opdracht-rij opdracht-header">
+      <span>Startdatum</span>
+      <span>Einddatum</span>
+      <span>Code</span>
+      <span>Locatie</span>
+      <span>Model</span>
+      <span>Lengte</span>
+      <span>Breedte</span>
+      <span>Hoogte</span>
+      <span>Gewicht</span>
+      <span>Zijkant</span>
+      <span>Zagerij</span>
+      <span>Dynamisch</span>
+      <span>Statisch</span>
+      <span>Actie</span>
+    </div>
+    <div class="maand-tegels" id="voorbeeldContainer"></div>
+  </div>
+
+  <!-- Actieknoppen -->
+  <div class="actie-knoppen">
+    <button class="excel-knop" onclick="exporteerVoorbeeld()">📤 Exporteer naar Excel</button>
+    <a href="importeren.html">
+      <button class="excel-knop">📥 Ga door met importeren</button>
+    </a>
+  </div>
+
+  <!-- Script -->
+  <script>
+    const container = document.getElementById("voorbeeldContainer");
+
+    function maakTegel(opdracht) {
+      const isLeeg = Object.values(opdracht).every(val => val === "" || val === null || val === undefined);
+      if (isLeeg) return;
+
+      const tegel = document.createElement("div");
+      tegel.className = "opdracht-tegel";
+
+      tegel.innerHTML = `
+        <div class="opdracht-rij">
+          <input type="date" value="${opdracht.Startdatum || ''}" class="veld veld-start">
+          <input type="date" value="${opdracht.Einddatum || ''}" class="veld veld-eind">
+          <input type="text" value="${opdracht.Code || ''}" class="veld veld-code">
+          <input type="text" value="${opdracht.Locatie || ''}" class="veld veld-locatie">
+          <input type="text" value="${opdracht.Model || ''}" class="veld veld-model">
+          <input type="number" value="${opdracht.Lengte || ''}" class="veld veld-lengte">
+          <input type="number" value="${opdracht.Breedte || ''}" class="veld veld-breedte">
+          <input type="number" value="${opdracht.Hoogte || ''}" class="veld veld-hoogte">
+          <input type="number" value="${opdracht.Gewicht || ''}" class="veld veld-gewicht">
+          <input type="number" value="${opdracht.Zijkant || ''}" class="veld veld-zijkant">
+          <input type="number" value="${opdracht.Zagerij || ''}" class="veld veld-zagerij">
+          <input type="number" value="${opdracht.Dynamisch || ''}" class="veld veld-dynamisch">
+          <input type="number" value="${opdracht.Statisch || ''}" class="veld veld-statisch">
+          <button class="verwijder-knop" onclick="verwijderTegel(this)">🗑️</button>
+        </div>
+      `;
+
+      container.appendChild(tegel);
+    }
+
+    function verwijderTegel(knop) {
+      const tegel = knop.closest(".opdracht-tegel");
+      tegel.remove();
+    }
+
+    function exporteerVoorbeeld() {
+      const tegels = document.querySelectorAll(".opdracht-tegel");
+      const exportData = [];
+
+      tegels.forEach(tegel => {
+        exportData.push({
+          Startdatum: tegel.querySelector(".veld-start").value,
+          Einddatum: tegel.querySelector(".veld-eind").value,
+          Code: tegel.querySelector(".veld-code").value,
+          Locatie: tegel.querySelector(".veld-locatie").value,
+          Model: tegel.querySelector(".veld-model").value,
+          Lengte: tegel.querySelector(".veld-lengte").value,
+          Breedte: tegel.querySelector(".veld-breedte").value,
+          Hoogte: tegel.querySelector(".veld-hoogte").value,
+          Gewicht: tegel.querySelector(".veld-gewicht").value,
+          Zijkant: tegel.querySelector(".veld-zijkant").value,
+          Zagerij: tegel.querySelector(".veld-zagerij").value,
+          Dynamisch: tegel.querySelector(".veld-dynamisch").value,
+          Statisch: tegel.querySelector(".veld-statisch").value
+        });
+      });
+
+      const werkblad = XLSX.utils.json_to_sheet(exportData);
+      const werkboek = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(werkboek, werkblad, "Voorbeeld");
+      XLSX.writeFile(werkboek, "voorbeeld-export.xlsx");
+    }
+
+function opslaanEnVerversen() {
+  const tegels = document.querySelectorAll(".opdracht-tegel");
+  const nieuweOpdrachten = [];
+
+  tegels.forEach(tegel => {
+    const opdracht = {
+      Startdatum: tegel.querySelector(".veld-start").value,
+      Einddatum: tegel.querySelector(".veld-eind").value,
+      Code: tegel.querySelector(".veld-code").value,
+      Locatie: tegel.querySelector(".veld-locatie").value,
+      Model: tegel.querySelector(".veld-model").value,
+      Lengte: tegel.querySelector(".veld-lengte").value,
+      Breedte: tegel.querySelector(".veld-breedte").value,
+      Hoogte: tegel.querySelector(".veld-hoogte").value,
+      Gewicht: tegel.querySelector(".veld-gewicht").value,
+      Zijkant: tegel.querySelector(".veld-zijkant").value,
+      Zagerij: tegel.querySelector(".veld-zagerij").value,
+      Dynamisch: tegel.querySelector(".veld-dynamisch").value,
+      Statisch: tegel.querySelector(".veld-statisch").value
+    };
+
+    const isLeeg = Object.values(opdracht).every(val => val === "" || val === null || val === undefined);
+    if (!isLeeg) {
+      nieuweOpdrachten.push(opdracht);
+    }
+  });
+
+  localStorage.setItem("opdrachten", JSON.stringify(nieuweOpdrachten));
+  alert(`✅ ${nieuweOpdrachten.length} regels opgeslagen`);
+
+  // ✅ Ga direct naar de overzichtsplanningpagina
+  window.location.href = "overzicht.html"; // ← vervang dit met jouw echte overzichtspagina
+  
+  // ✅ Toon opgeslagen opdrachten bij het laden van de pagina
+const opgeslagen = JSON.parse(localStorage.getItem("opdrachten")) || [];
+opgeslagen.forEach(maakTegel);
+
+}
+
+const opgeslagen = JSON.parse(localStorage.getItem("opdrachten")) || [];
+opgeslagen.forEach(maakTegel);
+
+
+</script>

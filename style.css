@@ -1,0 +1,311 @@
+/* Algemene opmaak */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  padding: 30px;
+  color: #333;
+}
+
+/* Titel */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Tabel */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+th, td {
+  padding: 12px;
+  border: 1px solid #ccc;
+  text-align: left;
+}
+
+/* Koprij */
+thead {
+  background-color: #007BFF;
+  color: white;
+}
+
+/* Invoervelden */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+/* Knoppen */
+button {
+  padding: 8px 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #218838;
+}
+
+.verwijder-knop {
+  background-color: #dc3545 !important;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.verwijder-knop:hover {
+  background-color: #c82333 !important;
+}
+
+.opslaan-knop {
+  margin-left: 10px;
+  padding: 6px 10px;
+  background-color: #28A745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.opslaan-knop:hover {
+  background-color: #218838;
+}
+
+.terug-container {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
+.terug-container button {
+  padding: 8px 14px;
+  background-color: #007BF2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.terug-container button:hover {
+  background-color: #005bb5;
+}
+
+/* Dashboard en tegels */
+.dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.tegel {
+  flex: 1 1 250px;
+  background-color: #ffffff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tegel:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.tegel h2 {
+  margin-top: 0;
+  font-size: 1.4em;
+}
+
+.tegel p {
+  color: #555;
+}
+
+/* Maandweergave */
+.maand-blok {
+  margin-bottom: 40px;
+}
+
+.maand-blok h2 {
+  margin-bottom: 12px;
+  color: #333;
+  font-size: 1.4em;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 4px;
+}
+
+/* Opdracht-tegel */
+.opdracht-tegel {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.opdracht-tegel:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.opdracht-tegel strong {
+  display: inline-block;
+  font-weight: bold;
+  color: #000;
+  margin-right: 6px;
+}
+
+.opdracht-tegel br {
+  margin-bottom: 6px;
+}
+
+/* Nieuwe container voor tegels per maand */
+.maand-tegels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+/* Elke tegel */
+.opdracht-tegel {
+  flex: 1 1 calc(33.333% - 20px); /* 3 per rij met ruimte tussen */
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: box-shadow 0.2s ease;
+}
+
+.opdracht-tegel:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.opdracht-tegel strong {
+  display: inline-block;
+  font-weight: bold;
+  color: #000;
+  margin-right: 6px;
+}
+
+@media (max-width: 900px) {
+  .opdracht-tegel {
+    flex: 1 1 calc(50% - 20px); /* 2 per rij */
+  }
+}
+
+@media (max-width: 600px) {
+  .opdracht-tegel {
+    flex: 1 1 100%; /* 1 per rij */
+  }
+}
+
+.excel-knop-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.excel-knop {
+  padding: 6px 10px;
+  font-size: 13px;
+  background-color: #007BF2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.excel-knop:hover {
+  background-color: #005bb5;
+  transform: translateY(-2px);
+}
+
+.actie-knoppen {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 30px;
+  padding-right: 30px;
+}
+
+.excel-knop {
+  padding: 8px 14px;
+  font-size: 14px;
+  background-color: #007BF2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.excel-knop:hover {
+  background-color: #005bb5;
+  transform: translateY(-2px);
+}
+
+.opdracht-tegel {
+  margin-bottom: 12px;
+}
+
+.opdracht-rij {
+  display: grid;
+  grid-template-columns: repeat(14, minmax(100px, 1fr));
+  gap: 8px;
+  align-items: center;
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+.veld {
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.verwijder-knop {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.verwijder-knop:hover {
+  background-color: #c82333;
+}
+
+.opdracht-header {
+  font-weight: bold;
+  background-color: #e9ecef;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}

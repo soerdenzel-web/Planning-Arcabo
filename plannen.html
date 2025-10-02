@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Mijn Planningstool</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .terug-container {
+      margin-bottom: 20px;
+    }
+
+    .terug-container button {
+      margin-right: 10px;
+      padding: 8px 14px;
+      background-color: #007BF2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .terug-container button:hover {
+      background-color: #005bb5;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      vertical-align: top;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 6px;
+      margin-bottom: 6px;
+      box-sizing: border-box;
+    }
+
+    .extra-velden {
+      display: none;
+      margin-top: 5px;
+      background-color: #eef;
+      padding: 8px;
+      border-radius: 4px;
+    }
+
+    .extra-velden button {
+      margin-top: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      background-color: #007BF2;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .extra-velden button:hover {
+      background-color: #005bb5;
+    }
+
+    .excel-knop-container {
+      margin-top: 30px;
+    }
+
+    .excel-knop {
+      padding: 10px 16px;
+      font-size: 14px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .excel-knop:hover {
+      background-color: #218838;
+    }
+	
+	.verwijder-knop {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.verwijder-knop:hover {
+  background-color: #c82333;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="terug-container">
+    <button onclick="window.location.href='index.html'">← Terug naar Home</button>
+    <button onclick="window.location.href='overzicht.html'">← Ga naar planning overzicht</button>
+  </div>
+
+  <h1>Planningstool Arcabo</h1>
+
+  <button onclick="voegRijToe()">+ Voeg opdracht toe</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Startdatum</th>
+        <th>Einddatum</th>
+        <th>Code</th>
+        <th>Locatie</th>
+        <th>Model</th>
+        <th>Lengte</th>
+        <th>Breedte</th>
+        <th>Zagerij</th>
+        <th>Dynamisch</th>
+        <th>Statisch</th>
+        <th>Actie</th>
+      </tr>
+    </thead>
+    <tbody id="planningTabel"></tbody>
+  </table>
+
+  <div class="excel-knop-container">
+    <a href="importeren.html">
+      <button class="excel-knop">📥 Excel importeren</button>
+    </a>
+  </div>
+
+  <script>
+    function toggleExtra(id) {
+		const el = document.getElementById(id);
+		const huidige = window.getComputedStyle(el).display;
+		el.style.display = huidige === "none" ? "block" : "none";
+	}
+
+
+    function voegExtraToe(knop, classNaam) {
+      const container = knop.parentElement;
+      const nieuwInput = document.createElement("input");
+      nieuwInput.type = "text";
+      nieuwInput.className = classNaam;
+      nieuwInput.placeholder = "Extra toevoeging";
+      nieuwInput.style.marginTop = "5px";
+      container.insertBefore(nieuwInput, knop);
+    }
+
+    function verwijderRij(knop) {
+      const rij = knop.closest("tr");
+      rij.remove();
+    }
+
+    function slaDezeOpdrachtOp(knop) {
+      const rij = knop.closest("tr");
+
+      const opdracht = {
+        Startdatum: rij.querySelector(".veld-start").value,
+        Einddatum: rij.querySelector(".veld-eind").value,
+        Code: rij.querySelector(".veld-code").value,
+        Locatie: rij.querySelector(".veld-locatie").value,
+        Model: rij.querySelector(".veld-model").value,
+        Lengte: rij.querySelector(".veld-lengte").value,
+        Breedte: rij.querySelector(".veld-breedte").value,
+        Zagerij: rij.querySelector(".veld-zagerij").value,
+        Dynamisch: rij.querySelector(".veld-dynamisch").value,
+        Statisch: rij.querySelector(".veld-statisch").value,
+        ExtraZagerij: Array.from(rij.querySelectorAll(".veld-zagerij-extra")).map(i => i.value).filter(v => v),
+        ExtraDynamisch: Array.from(rij.querySelectorAll(".veld-dynamisch-extra")).map(i => i.value).filter(v => v),
+        ExtraStatisch: Array.from(rij.querySelectorAll(".veld-statisch-extra")).map(i => i.value).filter(v => v)
+      };
+
+      const bestaande = JSON.parse(localStorage.getItem("opdrachten")) || [];
+      bestaande.push(opdracht);
+      localStorage.setItem("opdrachten", JSON.stringify(bestaande));
+
+      alert("✅ Opdracht opgeslagen!");
+    }
+
+    function voegRijToe() {
+      const rijIndex = document.querySelectorAll("#planningTabel tr").length;
+      const rij = document.createElement("tr");
+
+      rij.innerHTML = `
+        <td><input type="date" class="veld-start"></td>
+        <td><input type="date" class="veld-eind"></td>
+        <td><input type="text" class="veld-code" placeholder="Code chalet"></td>
+        <td>
+          <select class="veld-locatie">
+            <option value="">-- Kies locatie --</option>
+            <option value="Hal 1/2">Hal 1/2</option>
+            <option value="Hal 3a">Hal 3a</option>
+            <option value="Hal 3b">Hal 3b</option>
+            <option value="Hal 4">Hal 4</option>
+            <option value="Hal 5a">Hal 5a</option>
+            <option value="Hal 5b">Hal 5b</option>
+            <option value="Hal 5c">Hal 5c</option>
+          </select>
+        </td>
+        <td><input type="text" class="veld-model" placeholder="Model"></td>
+        <td><input type="number" class="veld-lengte" placeholder="Lengte"></td>
+        <td><input type="number" class="veld-breedte" placeholder="Breedte"></td>
+
+        <td>
+          <input type="number" class="veld-zagerij" placeholder="Uren Zagerij">
+          <button onclick="toggleExtra('zagerijExtra${rijIndex}')">▼</button>
+          <div id="zagerijExtra${rijIndex}" class="extra-velden">
+            <input type="text" class="veld-zagerij-extra" placeholder="Toevoeging"><br>
+            <button onclick="voegExtraToe(this, 'veld-zagerij-extra')">+ Toevoeging</button>
+          </div>
+        </td>
+
+        <td>
+          <input type="number" class="veld-dynamisch" placeholder="Uren Dynamisch">
+          <button onclick="toggleExtra('dynamischExtra${rijIndex}')">▼</button>
+          <div id="dynamischExtra${rijIndex}" class="extra-velden">
+            <input type="text" class="veld-dynamisch-extra" placeholder="Toevoeging"><br>
+            <button onclick="voegExtraToe(this, 'veld-dynamisch-extra')">+ Toevoeging</button>
+          </div>
+        </td>
+
+        <td>
+          <input type="number" class="veld-statisch" placeholder="Uren Statisch">
+          <button onclick="toggleExtra('statischExtra${rijIndex}')">▼</button>
+          <div id="statischExtra${rijIndex}" class="extra-velden">
+            <input type="text" class="veld-statisch-extra" placeholder="Toevoeging"><br>
+            <button onclick="voegExtraToe(this, 'veld-statisch-extra')">+ Toevoeging</button>
+          </div>
+        </td>
+
+        <td>
+          <button onclick="slaDezeOpdrachtOp(this)">Opslaan</button>
+          <button class="verwijder-knop" onclick="verwijderRij(this)">🗑️ Verwijder</button>
+        </td>
+      `;
+
+      document.getElementById("planningTabel").appendChild(rij);
+    }
+
+    // ✅ Voeg standaard één rij toe bij het laden
+    document.addEventListener("DOMContentLoaded", () => {
+      voegRijToe();
+    });
+  </script>
+
+</body>
+</html>
