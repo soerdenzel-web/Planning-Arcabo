@@ -103,129 +103,101 @@
 
   <div id="maandContainer"></div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
-
   <script>
-    const firebaseConfig = {
-      apiKey: "JOUW_API_KEY",
-      authDomain: "JOUW_PROJECT.firebaseapp.com",
-      projectId: "JOUW_PROJECT_ID",
-      storageBucket: "JOUW_PROJECT.appspot.com",
-      messagingSenderId: "JOUW_SENDER_ID",
-      appId: "JOUW_APP_ID"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
+    const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
     const maandContainer = document.getElementById("maandContainer");
+
     const opdrachtenPerMaand = {};
 
-    db.collection("opdrachten").get().then(snapshot => {
-      const opdrachten = [];
-      snapshot.forEach(doc => {
-        opdrachten.push({ ...doc.data(), id: doc.id });
-      });
-
-      opdrachten.forEach(opdracht => {
-        const maandKey = opdracht.Startdatum?.slice(0, 7);
-        if (!maandKey) return;
-        if (!opdrachtenPerMaand[maandKey]) {
-          opdrachtenPerMaand[maandKey] = [];
-        }
-        opdrachtenPerMaand[maandKey].push(opdracht);
-      });
-
-      for (const maand in opdrachtenPerMaand) {
-        const maandDiv = document.createElement("div");
-        maandDiv.className = "maand-blok";
-
-        const maandTitel = document.createElement("h2");
-        maandTitel.textContent = `Maand: ${maand}`;
-        maandDiv.appendChild(maandTitel);
-
-        const tegelContainer = document.createElement("div");
-
-        opdrachtenPerMaand[maand].forEach(opdracht => {
-          const tegel = document.createElement("div");
-          tegel.className = "opdracht-tegel";
-
-          const urenZagerij = parseFloat(opdracht.Zagerij) || 0;
-          const urenDynamisch = parseFloat(opdracht.Dynamisch) || 0;
-          const urenStatisch = parseFloat(opdracht.Statisch) || 0;
-          const totaalPerOpdracht = urenZagerij + urenDynamisch + urenStatisch;
-
-          tegel.innerHTML = `
-            <strong>Periode:</strong> ${opdracht.Startdatum} → ${opdracht.Einddatum}<br>
-            <strong>Code:</strong> ${opdracht.Code || "n.v.t."}<br>
-            <strong>Locatie:</strong> ${opdracht.Locatie || "n.v.t."}<br>
-            <strong>Model:</strong> ${opdracht.Model || "n.v.t."}<br>
-            <strong>Afmetingen:</strong> ${opdracht.Lengte || "?"} × ${opdracht.Breedte || "?"}<br>
-            <strong>Zagerij:</strong> ${urenZagerij} uur<br>
-            <strong>Dynamisch:</strong> ${urenDynamisch} uur<br>
-            <strong>Statisch:</strong> ${urenStatisch} uur<br>
-            <strong>Subtotaal:</strong> ${totaalPerOpdracht} uur<br>
-          `;
-
-          if (opdracht.ExtraZagerij?.length) {
-            tegel.innerHTML += `<strong>Extra Zagerij:</strong><ul>${opdracht.ExtraZagerij.map(u => `<li>${u}</li>`).join("")}</ul>`;
-          }
-
-          if (opdracht.ExtraDynamisch?.length) {
-            tegel.innerHTML += `<strong>Extra Dynamisch:</strong><ul>${opdracht.ExtraDynamisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
-          }
-
-          if (opdracht.ExtraStatisch?.length) {
-            tegel.innerHTML += `<strong>Extra Statisch:</strong><ul>${opdracht.ExtraStatisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
-          }
-
-          tegel.innerHTML += `
-            <button class="bewerk-knop" onclick="bewerkOpdracht('${opdracht.id}')">✏️ Bewerken</button>
-            <button class="verwijder-knop" onclick="verwijderOpdracht('${opdracht.id}')">🗑️ Verwijder</button>
-          `;
-
-          tegelContainer.appendChild(tegel);
-        });
-
-        maandDiv.appendChild(tegelContainer);
-        maandContainer.appendChild(maandDiv);
+    opdrachten.forEach((opdracht, index) => {
+      const maandKey = opdracht.Startdatum?.slice(0, 7); // "YYYY-MM"
+      if (!maandKey) return;
+      if (!opdrachtenPerMaand[maandKey]) {
+        opdrachtenPerMaand[maandKey] = [];
       }
+      opdrachtenPerMaand[maandKey].push({ ...opdracht, index });
     });
 
-    function verwijderOpdracht(id) {
-      db.collection("opdrachten").doc(id).delete()
-        .then(() => {
-          alert("🗑️ Opdracht verwijderd!");
-          location.reload();
-        })
-        .catch(error => {
-          console.error("❌ Fout bij verwijderen:", error);
-        });
+    for (const maand in opdrachtenPerMaand) {
+      const maandDiv = document.createElement("div");
+      maandDiv.className = "maand-blok";
+
+      const maandTitel = document.createElement("h2");
+      maandTitel.textContent = `Maand: ${maand}`;
+      maandDiv.appendChild(maandTitel);
+
+      const tegelContainer = document.createElement("div");
+
+      opdrachtenPerMaand[maand].forEach(opdracht => {
+        const tegel = document.createElement("div");
+        tegel.className = "opdracht-tegel";
+
+        const urenZagerij = parseFloat(opdracht.Zagerij) || 0;
+        const urenDynamisch = parseFloat(opdracht.Dynamisch) || 0;
+        const urenStatisch = parseFloat(opdracht.Statisch) || 0;
+        const totaalPerOpdracht = urenZagerij + urenDynamisch + urenStatisch;
+
+        tegel.innerHTML = `
+          <strong>Periode:</strong> ${opdracht.Startdatum} → ${opdracht.Einddatum}<br>
+          <strong>Code:</strong> ${opdracht.Code || "n.v.t."}<br>
+          <strong>Locatie:</strong> ${opdracht.Locatie || "n.v.t."}<br>
+          <strong>Model:</strong> ${opdracht.Model || "n.v.t."}<br>
+          <strong>Afmetingen:</strong> ${opdracht.Lengte || "?"} × ${opdracht.Breedte || "?"}<br>
+          <strong>Zagerij:</strong> ${urenZagerij} uur<br>
+          <strong>Dynamisch:</strong> ${urenDynamisch} uur<br>
+          <strong>Statisch:</strong> ${urenStatisch} uur<br>
+          <strong>Subtotaal:</strong> ${totaalPerOpdracht} uur<br>
+        `;
+
+        if (opdracht.ExtraZagerij && opdracht.ExtraZagerij.length > 0) {
+          tegel.innerHTML += `<strong>Extra Zagerij:</strong><ul>${opdracht.ExtraZagerij.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        if (opdracht.ExtraDynamisch && opdracht.ExtraDynamisch.length > 0) {
+          tegel.innerHTML += `<strong>Extra Dynamisch:</strong><ul>${opdracht.ExtraDynamisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        if (opdracht.ExtraStatisch && opdracht.ExtraStatisch.length > 0) {
+          tegel.innerHTML += `<strong>Extra Statisch:</strong><ul>${opdracht.ExtraStatisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
+        }
+
+        tegel.innerHTML += `
+          <button class="bewerk-knop" onclick="bewerkOpdracht(${opdracht.index})">✏️ Bewerken</button>
+          <button class="verwijder-knop" onclick="verwijderOpdracht(${opdracht.index})">🗑️ Verwijder</button>
+        `;
+
+        tegelContainer.appendChild(tegel);
+      });
+
+      maandDiv.appendChild(tegelContainer);
+      maandContainer.appendChild(maandDiv);
     }
 
-    function bewerkOpdracht(id) {
-      db.collection("opdrachten").doc(id).get().then(doc => {
-        if (!doc.exists) return;
+    function verwijderOpdracht(index) {
+      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+      opdrachten.splice(index, 1);
+      localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+      location.reload();
+    }
 
-        const opdracht = doc.data();
-        const nieuweWaarden = prompt("✏️ Pas de opdracht aan (JSON-formaat):", JSON.stringify(opdracht, null, 2));
-        if (!nieuweWaarden) return;
+    function bewerkOpdracht(index) {
+      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+      const opdracht = opdrachten[index];
 
-        try {
-          const aangepasteOpdracht = JSON.parse(nieuweWaarden);
-          db.collection("opdrachten").doc(id).set(aangepasteOpdracht)
-            .then(() => {
-              alert("✅ Opdracht bijgewerkt!");
-              location.reload();
-            });
-        } catch (e) {
-          alert("❌ Ongeldige invoer. Zorg dat je geldige JSON gebruikt.");
-        }
-      });
+      const nieuweWaarden = prompt("✏️ Pas de opdracht aan (JSON-formaat):", JSON.stringify(opdracht, null, 2));
+      if (!nieuweWaarden) return;
+
+      try {
+        const aangepasteOpdracht = JSON.parse(nieuweWaarden);
+        opdrachten[index] = aangepasteOpdracht;
+        localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
+        alert("✅ Opdracht bijgewerkt!");
+        location.reload();
+      } catch (e) {
+        alert("❌ Ongeldige invoer. Zorg dat je geldige JSON gebruikt.");
+      }
     }
   </script>
 
 </body>
-
+</html>
