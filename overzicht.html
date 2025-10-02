@@ -123,7 +123,7 @@
     const maandContainer = document.getElementById("maandContainer");
     const opdrachtenPerMaand = {};
 
-    db.collection("opdrachten").get().then(snapshot => {
+    db.collection("Overzicht Opdrachten").get().then(snapshot => {
       const opdrachten = [];
       snapshot.forEach(doc => {
         opdrachten.push({ ...doc.data(), id: doc.id });
@@ -228,3 +228,4 @@
   </script>
 
 </body>
+
