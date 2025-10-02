@@ -145,13 +145,28 @@
     </a>
   </div>
 
-  <script>
-    function toggleExtra(id) {
-		const el = document.getElementById(id);
-		const huidige = window.getComputedStyle(el).display;
-		el.style.display = huidige === "none" ? "block" : "none";
-	}
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
 
+  <script>
+    const firebaseConfig = {
+      apiKey: "JOUW_API_KEY",
+      authDomain: "JOUW_PROJECT.firebaseapp.com",
+      projectId: "JOUW_PROJECT_ID",
+      storageBucket: "JOUW_PROJECT.appspot.com",
+      messagingSenderId: "JOUW_SENDER_ID",
+      appId: "JOUW_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function toggleExtra(id) {
+      const el = document.getElementById(id);
+      const huidige = window.getComputedStyle(el).display;
+      el.style.display = huidige === "none" ? "block" : "none";
+    }
 
     function voegExtraToe(knop, classNaam) {
       const container = knop.parentElement;
@@ -187,11 +202,14 @@
         ExtraStatisch: Array.from(rij.querySelectorAll(".veld-statisch-extra")).map(i => i.value).filter(v => v)
       };
 
-      const bestaande = JSON.parse(localStorage.getItem("opdrachten")) || [];
-      bestaande.push(opdracht);
-      localStorage.setItem("opdrachten", JSON.stringify(bestaande));
-
-      alert("✅ Opdracht opgeslagen!");
+      db.collection("opdrachten").add(opdracht)
+        .then(() => {
+          alert("✅ Opdracht opgeslagen in Firebase!");
+        })
+        .catch(error => {
+          console.error("❌ Fout bij opslaan:", error);
+          alert("Er ging iets mis bij het opslaan.");
+        });
     }
 
     function voegRijToe() {
@@ -254,11 +272,10 @@
       document.getElementById("planningTabel").appendChild(rij);
     }
 
-    // ✅ Voeg standaard één rij toe bij het laden
     document.addEventListener("DOMContentLoaded", () => {
       voegRijToe();
     });
   </script>
 
 </body>
-</html>
+
