@@ -103,19 +103,39 @@
 
   <div id="maandContainer"></div>
 
-  <script>
-    const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
-    const maandContainer = document.getElementById("maandContainer");
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
 
-    const opdrachtenPerMaand = {};
+<script>
+  const firebaseConfig = {
+    apiKey: "JOUW_API_KEY",
+    authDomain: "JOUW_PROJECT.firebaseapp.com",
+    projectId: "JOUW_PROJECT_ID",
+    storageBucket: "JOUW_PROJECT.appspot.com",
+    messagingSenderId: "JOUW_SENDER_ID",
+    appId: "JOUW_APP_ID"
+  };
 
-    opdrachten.forEach((opdracht, index) => {
-      const maandKey = opdracht.Startdatum?.slice(0, 7); // "YYYY-MM"
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  const maandContainer = document.getElementById("maandContainer");
+  const opdrachtenPerMaand = {};
+
+  db.collection("opdrachten").get().then(snapshot => {
+    const opdrachten = [];
+    snapshot.forEach(doc => {
+      opdrachten.push({ ...doc.data(), id: doc.id });
+    });
+
+    opdrachten.forEach(opdracht => {
+      const maandKey = opdracht.Startdatum?.slice(0, 7);
       if (!maandKey) return;
       if (!opdrachtenPerMaand[maandKey]) {
         opdrachtenPerMaand[maandKey] = [];
       }
-      opdrachtenPerMaand[maandKey].push({ ...opdracht, index });
+      opdrachtenPerMaand[maandKey].push(opdracht);
     });
 
     for (const maand in opdrachtenPerMaand) {
@@ -149,21 +169,21 @@
           <strong>Subtotaal:</strong> ${totaalPerOpdracht} uur<br>
         `;
 
-        if (opdracht.ExtraZagerij && opdracht.ExtraZagerij.length > 0) {
+        if (opdracht.ExtraZagerij?.length) {
           tegel.innerHTML += `<strong>Extra Zagerij:</strong><ul>${opdracht.ExtraZagerij.map(u => `<li>${u}</li>`).join("")}</ul>`;
         }
 
-        if (opdracht.ExtraDynamisch && opdracht.ExtraDynamisch.length > 0) {
+        if (opdracht.ExtraDynamisch?.length) {
           tegel.innerHTML += `<strong>Extra Dynamisch:</strong><ul>${opdracht.ExtraDynamisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
         }
 
-        if (opdracht.ExtraStatisch && opdracht.ExtraStatisch.length > 0) {
+        if (opdracht.ExtraStatisch?.length) {
           tegel.innerHTML += `<strong>Extra Statisch:</strong><ul>${opdracht.ExtraStatisch.map(u => `<li>${u}</li>`).join("")}</ul>`;
         }
 
         tegel.innerHTML += `
-          <button class="bewerk-knop" onclick="bewerkOpdracht(${opdracht.index})">✏️ Bewerken</button>
-          <button class="verwijder-knop" onclick="verwijderOpdracht(${opdracht.index})">🗑️ Verwijder</button>
+          <button class="bewerk-knop" onclick="bewerkOpdracht('${opdracht.id}')">✏️ Bewerken</button>
+          <button class="verwijder-knop" onclick="verwijderOpdracht('${opdracht.id}')">🗑️ Verwijder</button>
         `;
 
         tegelContainer.appendChild(tegel);
@@ -172,32 +192,41 @@
       maandDiv.appendChild(tegelContainer);
       maandContainer.appendChild(maandDiv);
     }
+  });
 
-    function verwijderOpdracht(index) {
-      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
-      opdrachten.splice(index, 1);
-      localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
-      location.reload();
-    }
+  function verwijderOpdracht(id) {
+    db.collection("opdrachten").doc(id).delete()
+      .then(() => {
+        alert("🗑️ Opdracht verwijderd!");
+        location.reload();
+      })
+      .catch(error => {
+        console.error("❌ Fout bij verwijderen:", error);
+      });
+  }
 
-    function bewerkOpdracht(index) {
-      const opdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
-      const opdracht = opdrachten[index];
+  function bewerkOpdracht(id) {
+    db.collection("opdrachten").doc(id).get().then(doc => {
+      if (!doc.exists) return;
 
+      const opdracht = doc.data();
       const nieuweWaarden = prompt("✏️ Pas de opdracht aan (JSON-formaat):", JSON.stringify(opdracht, null, 2));
       if (!nieuweWaarden) return;
 
       try {
         const aangepasteOpdracht = JSON.parse(nieuweWaarden);
-        opdrachten[index] = aangepasteOpdracht;
-        localStorage.setItem("opdrachten", JSON.stringify(opdrachten));
-        alert("✅ Opdracht bijgewerkt!");
-        location.reload();
+        db.collection("opdrachten").doc(id).set(aangepasteOpdracht)
+          .then(() => {
+            alert("✅ Opdracht bijgewerkt!");
+            location.reload();
+          });
       } catch (e) {
         alert("❌ Ongeldige invoer. Zorg dat je geldige JSON gebruikt.");
       }
-    }
-  </script>
+    });
+  }
+</script>
+
 
 </body>
 </html>
