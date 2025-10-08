@@ -142,137 +142,121 @@
       <button class="excel-knop">📥 Excel importeren</button>
     </a>
   </div>
+  
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+<script>
+  function toggleExtra(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === "none" ? "block" : "none";
+  }
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyA9EB-Wznd-R5xg4S3XD7DbPebzDVN9itQ",
-      authDomain: "planning-arcabo.firebaseapp.com",
-      projectId: "planning-arcabo",
-      storageBucket: "planning-arcabo.appspot.com",
-      messagingSenderId: "736425908291",
-      appId: "1:736425908291:web:0fad073b98133e81f81cf6",
-      measurementId: "G-RF6GKZGBWL"
-    };
+  function voegExtraToe(knop, classNaam) {
+    const container = knop.parentElement;
+    const nieuwInput = document.createElement("input");
+    nieuwInput.type = "text";
+    nieuwInput.className = classNaam;
+    nieuwInput.placeholder = "Extra toevoeging";
+    nieuwInput.style.marginTop = "5px";
+    container.insertBefore(nieuwInput, knop);
+  }
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+  function verwijderRij(knop) {
+    const rij = knop.closest("tr");
+    rij.remove();
+  }
 
-    function toggleExtra(id) {
-      const el = document.getElementById(id);
-      el.style.display = el.style.display === "none" ? "block" : "none";
-    }
-
-    function voegExtraToe(knop, classNaam) {
-      const container = knop.parentElement;
-      const nieuwInput = document.createElement("input");
-      nieuwInput.type = "text";
-      nieuwInput.className = classNaam;
-      nieuwInput.placeholder = "Extra toevoeging";
-      nieuwInput.style.marginTop = "5px";
-      container.insertBefore(nieuwInput, knop);
-    }
-
-    function verwijderRij(knop) {
+    // Data opslaan naar backend
+    async function slaOpdrachtOp(knop) {
       const rij = knop.closest("tr");
-      rij.remove();
-    }
-
-    function slaDezeOpdrachtOp(knop) {
-      const rij = knop.closest("tr");
-
-      const opdracht = {
-        Startdatum: rij.querySelector(".veld-start").value,
-        Einddatum: rij.querySelector(".veld-eind").value,
-        Code: rij.querySelector(".veld-code").value,
-        Locatie: rij.querySelector(".veld-locatie").value,
-        Model: rij.querySelector(".veld-model").value,
-        Lengte: rij.querySelector(".veld-lengte").value,
-        Breedte: rij.querySelector(".veld-breedte").value,
-        Zagerij: rij.querySelector(".veld-zagerij").value,
-        Dynamisch: rij.querySelector(".veld-dynamisch").value,
-        Statisch: rij.querySelector(".veld-statisch").value,
-        ExtraZagerij: Array.from(rij.querySelectorAll(".veld-zagerij-extra")).map(i => i.value).filter(v => v),
-        ExtraDynamisch: Array.from(rij.querySelectorAll(".veld-dynamisch-extra")).map(i => i.value).filter(v => v),
-        ExtraStatisch: Array.from(rij.querySelectorAll(".veld-statisch-extra")).map(i => i.value).filter(v => v)
+      const data = {
+        startdatum: rij.querySelector(".veld-start").value,
+        einddatum: rij.querySelector(".veld-eind").value,
+        code: rij.querySelector(".veld-code").value,
+        locatie: rij.querySelector(".veld-locatie").value,
+        model: rij.querySelector(".veld-model").value,
+        lengte: rij.querySelector(".veld-lengte").value,
+        breedte: rij.querySelector(".veld-breedte").value,
+        zagerij: rij.querySelector(".veld-zagerij").value,
+        dynamisch: rij.querySelector(".veld-dynamisch").value,
+        statisch: rij.querySelector(".veld-statisch").value
       };
 
-      db.collection("opdrachten").add(opdracht)
-        .then(() => {
-          alert("✅ Opdracht opgeslagen in Firebase!");
-        })
-        .catch(error => {
-          console.error("❌ Fout bij opslaan:", error);
-          alert("Er ging iets mis bij het opslaan.");
-        });
+      const response = await fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+      alert(result.message);
     }
 
-    function voegRijToe() {
-      const rijIndex = document.querySelectorAll("#planningTabel tr").length;
-      const rij = document.createElement("tr");
+    // Voeg standaard één rij toe bij het laden
+    document.addEventListener("DOMContentLoaded", voegRijToe);
 
-      rij.innerHTML = `
-        <td><input type="date" class="veld-start"></td>
-        <td><input type="date" class="veld-eind"></td>
-        <td><input type="text" class="veld-code" placeholder="Code chalet"></td>
-        <td>
-          <select class="veld-locatie">
-            <option value="">-- Kies locatie --</option>
-            <option value="Hal 1/2">Hal 1/2</option>
-            <option value="Hal 3a">Hal 3a</option>
-            <option value="Hal 3b">Hal 3b</option>
-            <option value="Hal 4">Hal 4</option>
-            <option value="Hal 5a">Hal 5a</option>
-            <option value="Hal 5b">Hal 5b</option>
-            <option value="Hal 5c">Hal 5c</option>
-          </select>
-        </td>
-        <td><input type="text" class="veld-model" placeholder="Model"></td>
-        <td><input type="number" class="veld-lengte" placeholder="Lengte"></td>
-        <td><input type="number" class="veld-breedte" placeholder="Breedte"></td>
+  function voegRijToe() {
+    const rijIndex = document.querySelectorAll("#planningTabel tr").length;
+    const rij = document.createElement("tr");
 
-        <td>
-          <input type="number" class="veld-zagerij" placeholder="Uren Zagerij">
-          <button onclick="toggleExtra('zagerijExtra${rijIndex}')">▼</button>
-          <div id="zagerijExtra${rijIndex}" class="extra-velden">
-            <input type="text" class="veld-zagerij-extra" placeholder="Toevoeging"><br>
-            <button onclick="voegExtraToe(this, 'veld-zagerij-extra')">+ Toevoeging</button>
-          </div>
-        </td>
+    rij.innerHTML = `
+      <td><input type="date" class="veld-start"></td>
+      <td><input type="date" class="veld-eind"></td>
+      <td><input type="text" class="veld-code" placeholder="Code chalet"></td>
+      <td>
+        <select class="veld-locatie">
+          <option value="">-- Kies locatie --</option>
+          <option value="Hal 1/2">Hal 1/2</option>
+          <option value="Hal 3a">Hal 3a</option>
+          <option value="Hal 3b">Hal 3b</option>
+          <option value="Hal 4">Hal 4</option>
+          <option value="Hal 5a">Hal 5a</option>
+          <option value="Hal 5b">Hal 5b</option>
+          <option value="Hal 5c">Hal 5c</option>
+        </select>
+      </td>
+      <td><input type="text" class="veld-model" placeholder="Model"></td>
+      <td><input type="number" class="veld-lengte" placeholder="Lengte"></td>
+      <td><input type="number" class="veld-breedte" placeholder="Breedte"></td>
 
-        <td>
-          <input type="number" class="veld-dynamisch" placeholder="Uren Dynamisch">
-          <button onclick="toggleExtra('dynamischExtra${rijIndex}')">▼</button>
-          <div id="dynamischExtra${rijIndex}" class="extra-velden">
-            <input type="text" class="veld-dynamisch-extra" placeholder="Toevoeging"><br>
-            <button onclick="voegExtraToe(this, 'veld-dynamisch-extra')">+ Toevoeging</button>
-          </div>
-        </td>
+      <td>
+        <input type="number" class="veld-zagerij" placeholder="Uren Zagerij">
+        <button onclick="toggleExtra('zagerijExtra${rijIndex}')">▼</button>
+        <div id="zagerijExtra${rijIndex}" class="extra-velden">
+          <input type="text" class="veld-zagerij-extra" placeholder="Toevoeging"><br>
+          <button onclick="voegExtraToe(this, 'veld-zagerij-extra')">+ Toevoeging</button>
+        </div>
+      </td>
 
-        <td>
-          <input type="number" class="veld-statisch" placeholder="Uren Statisch">
-          <button onclick="toggleExtra('statischExtra${rijIndex}')">▼</button>
-          <div id="statischExtra${rijIndex}" class="extra-velden">
-            <input type="text" class="veld-statisch-extra" placeholder="Toevoeging"><br>
-            <button onclick="voegExtraToe(this, 'veld-statisch-extra')">+ Toevoeging</button>
-          </div>
-        </td>
+      <td>
+        <input type="number" class="veld-dynamisch" placeholder="Uren Dynamisch">
+        <button onclick="toggleExtra('dynamischExtra${rijIndex}')">▼</button>
+        <div id="dynamischExtra${rijIndex}" class="extra-velden">
+          <input type="text" class="veld-dynamisch-extra" placeholder="Toevoeging"><br>
+          <button onclick="voegExtraToe(this, 'veld-dynamisch-extra')">+ Toevoeging</button>
+        </div>
+      </td>
 
-        <td>
-          <button onclick="slaDezeOpdrachtOp(this)">Opslaan</button>
-          <button class="verwijder-knop" onclick="verwijderRij(this)">🗑️ Verwijder</button>
-        </td>
-      `;
+      <td>
+        <input type="number" class="veld-statisch" placeholder="Uren Statisch">
+        <button onclick="toggleExtra('statischExtra${rijIndex}')">▼</button>
+        <div id="statischExtra${rijIndex}" class="extra-velden">
+          <input type="text" class="veld-statisch-extra" placeholder="Toevoeging"><br>
+          <button onclick="voegExtraToe(this, 'veld-statisch-extra')">+ Toevoeging</button>
+        </div>
+      </td>
 
-      document.getElementById("planningTabel").appendChild(rij);
-    }
+      <td>
+        <button onclick="slaDezeOpdrachtOp(this)">📤 Opslaan naar Excel</button>
+        <button class="verwijder-knop" onclick="verwijderRij(this)">🗑️ Verwijder</button>
+      </td>
+    `;
 
-    document.addEventListener("DOMContentLoaded", () => {
-      voegRijToe();
-    });
-  </script>
+    document.getElementById("planningTabel").appendChild(rij);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    voegRijToe();
+  });
+</script>
 </body>
 </html>
