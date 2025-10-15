@@ -17,6 +17,7 @@ function voegRijToe() {
     { type: "text", placeholder: "Model" },
     { type: "number", placeholder: "Lengte" },
     { type: "number", placeholder: "Breedte" },
+	{ type: "number", placeholder: "Hoogte" },
     { type: "number", placeholder: "Aantal uren Zagerij" },
     { type: "number", placeholder: "Aantal uren Dynamisch" },
     { type: "number", placeholder: "Aantal uren Statisch" }
@@ -102,6 +103,7 @@ function voegRijToe() {
     model: document.getElementById("model").value,
     lengte: document.getElementById("lengte").value,
     breedte: document.getElementById("breedte").value,
+	hoogte: document.getElementById("hoogte").value,
     zagerij: document.getElementById("zagerij").value,
     dynamisch: document.getElementById("dynamisch").value,
     statisch: document.getElementById("statisch").value,
@@ -125,6 +127,7 @@ function slaEersteOpdrachtOp() {
     Model: document.getElementById("model").value,
     Lengte: document.getElementById("lengte").value,
     Breedte: document.getElementById("breedte").value,
+	Hoogte: document.getElementById("hoogte").value,
     Zagerij: document.getElementById("zagerij").value,
     Dynamisch: document.getElementById("dynamisch").value,
     Statisch: document.getElementById("statisch").value
@@ -153,6 +156,7 @@ function slaDezeOpdrachtOp(knop) {
     Model: rij.querySelector(".veld-model").value,
     Lengte: rij.querySelector(".veld-lengte").value,
     Breedte: rij.querySelector(".veld-breedte").value,
+	Hoogte: rij.querySelector(".veld-hoogte").value,
     Zagerij: rij.querySelector(".veld-zagerij").value,
     ZagerijType: rij.querySelector(".veld-zagerijType").value,
     ZagerijMachine: rij.querySelector(".veld-zagerijMachine").value,
