@@ -128,9 +128,13 @@
         <th>Model</th>
         <th>Lengte</th>
         <th>Breedte</th>
+		<th>Hoogte</th>
         <th>Zagerij</th>
+		<th>Taken Zagerij</th>
         <th>Dynamisch</th>
+		<th>Taken Dynamisch</th>
         <th>Statisch</th>
+		<th>Taken Statisch</th>
         <th>Actie</th>
       </tr>
     </thead>
@@ -176,9 +180,13 @@
         model: rij.querySelector(".veld-model").value,
         lengte: rij.querySelector(".veld-lengte").value,
         breedte: rij.querySelector(".veld-breedte").value,
+		Hoogte: rij.querySelector(".veld-hoogte").value
         zagerij: rij.querySelector(".veld-zagerij").value,
+		taken zagerij: rij.querySelector(".veld-taken zagerij").value
         dynamisch: rij.querySelector(".veld-dynamisch").value,
+		taken dynamisch: rij.querySelector(".veld-taken dynamisch").value
         statisch: rij.querySelector(".veld-statisch").value
+		taken statisch: rij.querySelector(".veld-taken statisch").value
       };
 
       const response = await fetch("/save", {
@@ -223,7 +231,7 @@
         <button onclick="toggleExtra('zagerijExtra${rijIndex}')">▼</button>
         <div id="zagerijExtra${rijIndex}" class="extra-velden">
           <input type="text" class="veld-zagerij-extra" placeholder="Toevoeging"><br>
-          <button onclick="voegExtraToe(this, 'veld-zagerij-extra')">+ Toevoeging</button>
+          <button onclick="voegExtraToe(this, 'veld-zagerij-extra')">+ Taak Toevoeging</button>
         </div>
       </td>
 
