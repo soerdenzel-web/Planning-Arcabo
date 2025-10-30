@@ -1,264 +1,203 @@
-<!DOCTYPE html>
-<html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <title>Mijn Planningstool</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      background-color: #f9f9f9;
-    }
+function getWeekNumber(dateStr) {
+  const date = new Date(dateStr);
+  const firstJan = new Date(date.getFullYear(), 0, 1);
+  const days = Math.floor((date - firstJan) / (24 * 60 * 60 * 1000));
+  return Math.ceil((days + firstJan.getDay() + 1) / 7);
+}
 
-    h1 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
+function voegRijToe() {
+  const tabel = document.getElementById("planningTabel");
+  const nieuweRij = document.createElement("tr");
 
-    .terug-container {
-      margin-bottom: 20px;
-    }
+  const kolommen = [
+    { type: "date", placeholder: "" },
+    { type: "date", placeholder: "" },
+    { type: "text", placeholder: "Code Chalet" },
+    { type: "number", placeholder: "locatie" },
+    { type: "text", placeholder: "Model" },
+    { type: "number", placeholder: "Lengte" },
+    { type: "number", placeholder: "Breedte" },
+	{ type: "number", placeholder: "Hoogte" },
+    { type: "number", placeholder: "Aantal uren Zagerij" },
+    { type: "number", placeholder: "Aantal uren Dynamisch" },
+    { type: "number", placeholder: "Aantal uren Statisch" }
+  ];
 
-    .terug-container button {
-      margin-right: 10px;
-      padding: 8px 14px;
-      background-color: #007BF2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
+  const inputs = [];
 
-    .terug-container button:hover {
-      background-color: #005bb5;
-    }
+  kolommen.forEach(kolom => {
+    const cel = document.createElement("td");
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-
-    td {
-      padding: 10px;
-      border: 1px solid #ccc;
-      vertical-align: top;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 6px;
-      margin-bottom: 6px;
-      box-sizing: border-box;
-    }
-
-    .extra-velden {
-      display: none;
-      margin-top: 5px;
-      background-color: #eef;
-      padding: 8px;
-      border-radius: 4px;
-    }
-
-    .extra-velden button {
-      margin-top: 6px;
-      padding: 4px 8px;
-      font-size: 12px;
-      background-color: #007BF2;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .extra-velden button:hover {
-      background-color: #005bb5;
-    }
-
-    .excel-knop-container {
-      margin-top: 30px;
-    }
-
-    .excel-knop {
-      padding: 10px 16px;
-      font-size: 14px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .excel-knop:hover {
-      background-color: #218838;
-    }
-
-    .verwijder-knop {
-      background-color: #dc3545;
-      color: white;
-      border: none;
-      padding: 6px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    .verwijder-knop:hover {
-      background-color: #c82333;
-    }
-  </style>
-</head>
-<body>
-  <div class="terug-container">
-    <button onclick="window.location.href='index.html'">← Terug naar Home</button>
-    <button onclick="window.location.href='overzicht.html'">← Ga naar planning overzicht</button>
-  </div>
-
-  <h1>Planningstool Arcabo</h1>
-
-  <button onclick="voegRijToe()">+ Voeg opdracht toe</button>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Startdatum</th>
-        <th>Einddatum</th>
-        <th>Code</th>
-        <th>Locatie</th>
-        <th>Model</th>
-        <th>Lengte</th>
-        <th>Breedte</th>
-		<th>Hoogte</th>
-        <th>Zagerij</th>
-        <th>Dynamisch</th>
-        <th>Statisch</th>
-        <th>Actie</th>
-      </tr>
-    </thead>
-    <tbody id="planningTabel"></tbody>
-  </table>
-
-  <div class="excel-knop-container">
-    <a href="importeren.html">
-      <button class="excel-knop">📥 Excel importeren</button>
-    </a>
-  </div>
-  
-
-<script>
-  function toggleExtra(id) {
-    const el = document.getElementById(id);
-    el.style.display = el.style.display === "none" ? "block" : "none";
-  }
-
-  function voegExtraToe(knop, classNaam) {
-    const container = knop.parentElement;
-    const nieuwInput = document.createElement("input");
-    nieuwInput.type = "text";
-    nieuwInput.className = classNaam;
-    nieuwInput.placeholder = "Extra toevoeging";
-    nieuwInput.style.marginTop = "5px";
-    container.insertBefore(nieuwInput, knop);
-  }
-
-  function verwijderRij(knop) {
-    const rij = knop.closest("tr");
-    rij.remove();
-  }
-
-    // Data opslaan naar backend
-    async function slaOpdrachtOp(knop) {
-      const rij = knop.closest("tr");
-      const data = {
-        startdatum: rij.querySelector(".veld-start").value,
-        einddatum: rij.querySelector(".veld-eind").value,
-        code: rij.querySelector(".veld-code").value,
-        locatie: rij.querySelector(".veld-locatie").value,
-        model: rij.querySelector(".veld-model").value,
-        lengte: rij.querySelector(".veld-lengte").value,
-        breedte: rij.querySelector(".veld-breedte").value,
-		hoogte: rij.querySelector(".veld-hoogte").value,
-        zagerij: rij.querySelector(".veld-zagerij").value,
-        dynamisch: rij.querySelector(".veld-dynamisch").value,
-        statisch: rij.querySelector(".veld-statisch").value
-      };
-
-      const response = await fetch("/save", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data)
+    if (kolom === "select") {
+      const select = document.createElement("select");
+      const opties = ["-- Kies locatie --", "Hal 1/2", "Hal 3a", "Hal 3b", "Hal 4", "Hall 5a", "Hall 5b", "Hall 5c"];
+      opties.forEach(loc => {
+        const optie = document.createElement("option");
+        optie.value = loc;
+        optie.textContent = loc;
+        select.appendChild(optie);
       });
-
-      const result = await response.json();
-      alert(result.message);
+      cel.appendChild(select);
+      inputs.push(select);
+    } else {
+      const input = document.createElement("input");
+      input.type = kolom.type;
+      input.placeholder = kolom.placeholder;
+      input.style.width = "100%";
+      cel.appendChild(input);
+      inputs.push(input);
     }
 
-    // Voeg standaard één rij toe bij het laden
-    document.addEventListener("DOMContentLoaded", voegRijToe);
-
-  function voegRijToe() {
-    const rijIndex = document.querySelectorAll("#planningTabel tr").length;
-    const rij = document.createElement("tr");
-
-    rij.innerHTML = `
-      <td><input type="date" class="veld-start"></td>
-      <td><input type="date" class="veld-eind"></td>
-      <td><input type="text" class="veld-code" placeholder="Code chalet"></td>
-      <td>
-        <select class="veld-locatie">
-          <option value="">-- Kies locatie --</option>
-          <option value="Hal 1/2">Hal 1/2</option>
-          <option value="Hal 3a">Hal 3a</option>
-          <option value="Hal 3b">Hal 3b</option>
-          <option value="Hal 4">Hal 4</option>
-          <option value="Hal 5a">Hal 5a</option>
-          <option value="Hal 5b">Hal 5b</option>
-          <option value="Hal 5c">Hal 5c</option>
-        </select>
-      </td>
-      <td><input type="text" class="veld-model" placeholder="Model"></td>
-      <td><input type="number" class="veld-lengte" placeholder="Lengte"></td>
-      <td><input type="number" class="veld-breedte" placeholder="Breedte"></td>
-	  <td><input type="number" class="veld-hoogte" placeholder="Hoogte"></td>
-      <td>
-        <input type="number" class="veld-zagerij" placeholder="Uren Zagerij">
-        <button onclick="toggleExtra('zagerijExtra${rijIndex}')">▼</button>
-        <div id="zagerijExtra${rijIndex}" class="extra-velden">
-          <input type="text" class="veld-zagerij-extra" placeholder="Toevoeging"><br>
-          <button onclick="voegExtraToe(this, 'veld-zagerij-extra')">+ Taak Toevoeging</button>
-        </div>
-      </td>
-
-      <td>
-        <input type="number" class="veld-dynamisch" placeholder="Uren Dynamisch">
-        <button onclick="toggleExtra('dynamischExtra${rijIndex}')">▼</button>
-        <div id="dynamischExtra${rijIndex}" class="extra-velden">
-          <input type="text" class="veld-dynamisch-extra" placeholder="Toevoeging"><br>
-          <button onclick="voegExtraToe(this, 'veld-dynamisch-extra')">+ Toevoeging</button>
-        </div>
-      </td>
-
-      <td>
-        <input type="number" class="veld-statisch" placeholder="Uren Statisch">
-        <button onclick="toggleExtra('statischExtra${rijIndex}')">▼</button>
-        <div id="statischExtra${rijIndex}" class="extra-velden">
-          <input type="text" class="veld-statisch-extra" placeholder="Toevoeging"><br>
-          <button onclick="voegExtraToe(this, 'veld-statisch-extra')">+ Toevoeging</button>
-        </div>
-      </td>
-
-      <td>
-        <button onclick="slaDezeOpdrachtOp(this)">📤 Opslaan naar Excel</button>
-        <button class="verwijder-knop" onclick="verwijderRij(this)">🗑️ Verwijder</button>
-      </td>
-    `;
-
-    document.getElementById("planningTabel").appendChild(rij);
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    voegRijToe();
+    nieuweRij.appendChild(cel);
   });
-</script>
-</body>
-</html>
+
+  const actieCel = document.createElement("td");
+
+  const verwijderKnop = document.createElement("button");
+  verwijderKnop.textContent = "Verwijder";
+  verwijderKnop.classList.add("verwijder-knop");
+  verwijderKnop.onclick = () => tabel.removeChild(nieuweRij);
+  actieCel.appendChild(verwijderKnop);
+
+  const opslaanKnop = document.createElement("button");
+  opslaanKnop.textContent = "Opslaan";
+  opslaanKnop.classList.add("opslaan-knop");
+  opslaanKnop.onclick = () => {
+    if (inputs.some(input => input.value === "")) {
+      alert("Vul alle velden in voordat je opslaat.");
+      return;
+    }
+
+    const opdracht = {
+      startdatum: inputs[0].value,
+      einddatum: inputs[1].value,
+      code: inputs[2].value,
+      locatie: inputs[3].value,
+      model: inputs[4].value,
+      lengte: inputs[5].value,
+      breedte: inputs[6].value,
+      zagerij: inputs[7].value,
+      dynamisch: inputs[8].value,
+      statisch: inputs[9].value,
+      week: getWeekNumber(inputs[0].value)
+    };
+
+    let bestaandeOpdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+    bestaandeOpdrachten.push(opdracht);
+    localStorage.setItem("opdrachten", JSON.stringify(bestaandeOpdrachten));
+    alert("Opdracht opgeslagen!");
+
+    inputs.forEach(input => input.value = ""); // velden leegmaken
+  };
+  actieCel.appendChild(opslaanKnop);
+
+  nieuweRij.appendChild(actieCel);
+  tabel.appendChild(nieuweRij);
+}
+
+  const opdracht = {
+    startdatum: document.getElementById("startdatum").value,
+    einddatum: document.getElementById("einddatum").value,
+    code: document.getElementById("code").value,
+    locatie: document.getElementById("locatie").value,
+    model: document.getElementById("model").value,
+    lengte: document.getElementById("lengte").value,
+    breedte: document.getElementById("breedte").value,
+	hoogte: document.getElementById("hoogte").value,
+    zagerij: document.getElementById("zagerij").value,
+    dynamisch: document.getElementById("dynamisch").value,
+    statisch: document.getElementById("statisch").value,
+    week: getWeekNumber(document.getElementById("startdatum").value)
+  };
+
+  let bestaandeOpdrachten = JSON.parse(localStorage.getItem("opdrachten")) || [];
+  bestaandeOpdrachten.push(opdracht);
+  localStorage.setItem("opdrachten", JSON.stringify(bestaandeOpdrachten));
+  alert("Opdracht opgeslagen!");
+
+  velden.forEach(id => document.getElementById(id).value = ""); // velden leegmaken
+}
+
+function slaEersteOpdrachtOp() {
+  const opdracht = {
+    Startdatum: document.getElementById("startdatum").value,
+    Einddatum: document.getElementById("einddatum").value,
+    Code: document.getElementById("code").value,
+    Locatie: document.getElementById("locatie").value,
+    Model: document.getElementById("model").value,
+    Lengte: document.getElementById("lengte").value,
+    Breedte: document.getElementById("breedte").value,
+	Hoogte: document.getElementById("hoogte").value,
+    Zagerij: document.getElementById("zagerij").value,
+    Dynamisch: document.getElementById("dynamisch").value,
+    Statisch: document.getElementById("statisch").value
+  };
+
+  // ✅ Haal bestaande opdrachten op
+  const bestaande = JSON.parse(localStorage.getItem("opdrachten")) || [];
+
+  // ✅ Voeg nieuwe opdracht toe
+  bestaande.push(opdracht);
+
+  // ✅ Sla alles opnieuw op
+  localStorage.setItem("opdrachten", JSON.stringify(bestaande));
+
+  alert("✅ Opdracht opgeslagen!");
+}
+
+function slaDezeOpdrachtOp(knop) {
+  const rij = knop.closest("tr");
+
+  const opdracht = {
+    Startdatum: rij.querySelector(".veld-start").value,
+    Einddatum: rij.querySelector(".veld-eind").value,
+    Code: rij.querySelector(".veld-code").value,
+    Locatie: rij.querySelector(".veld-locatie").value,
+    Model: rij.querySelector(".veld-model").value,
+    Lengte: rij.querySelector(".veld-lengte").value,
+    Breedte: rij.querySelector(".veld-breedte").value,
+	Hoogte: rij.querySelector(".veld-hoogte").value,
+    Zagerij: rij.querySelector(".veld-zagerij").value,
+    ZagerijType: rij.querySelector(".veld-zagerijType").value,
+    ZagerijMachine: rij.querySelector(".veld-zagerijMachine").value,
+    ZagerijPersoneel: rij.querySelector(".veld-zagerijPersoneel").value,
+    Dynamisch: rij.querySelector(".veld-dynamisch").value,
+    DynamischType: rij.querySelector(".veld-dynamischType").value,
+    DynamischResultaat: rij.querySelector(".veld-dynamischResultaat").value,
+    Statisch: rij.querySelector(".veld-statisch").value,
+    StatischControle: rij.querySelector(".veld-statischControle").value,
+    StatischGewicht: rij.querySelector(".veld-statischGewicht").value
+  };
+
+  const bestaande = JSON.parse(localStorage.getItem("opdrachten")) || [];
+  bestaande.push(opdracht);
+  localStorage.setItem("opdrachten", JSON.stringify(bestaande));
+
+  alert("✅ Opdracht opgeslagen!");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  voegRijToe(); // Voeg standaard één rij toe bij het laden
+});
+
+function verwijderRij(knop) {
+  const rij = knop.closest("tr");
+  rij.remove();
+}
+const verwijderKnop = document.createElement("button");
+verwijderKnop.textContent = "Verwijder";
+verwijderKnop.classList.add("verwijder-knop");
+verwijderKnop.onclick = () => verwijderRij(verwijderKnop);
+
+function toggleExtra(id) {
+  const el = document.getElementById(id);
+  const isHidden = window.getComputedStyle(el).display === "none";
+  el.style.display = isHidden ? "block" : "none";
+}
+
+
+
+
+
+
+
