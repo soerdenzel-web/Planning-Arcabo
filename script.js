@@ -13,7 +13,7 @@ function voegRijToe() {
     { type: "date", placeholder: "" },
     { type: "date", placeholder: "" },
     { type: "text", placeholder: "Code Chalet" },
-    "select",
+    { type: "number", placeholder: "locatie" },
     { type: "text", placeholder: "Model" },
     { type: "number", placeholder: "Lengte" },
     { type: "number", placeholder: "Breedte" },
